@@ -8,13 +8,13 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
-  line-height: 1.5;
 }
 
 .app-container {
   max-width: 1100px;
   margin: 0 auto;
   padding: 32px 20px;
+  text-align: left;
 }
 
 .dashboard-header {
@@ -22,9 +22,8 @@ body {
 }
 
 .dashboard-header h1 {
-  font-size: 1.75rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #0f172a;
 }
 
 .subtitle {
@@ -33,10 +32,10 @@ body {
   margin-top: 4px;
 }
 
-/* KPI Grid */
+/* KPI Сітка */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 24px;
 }
@@ -58,22 +57,17 @@ body {
 .kpi-title {
   font-size: 0.85rem;
   color: #64748b;
-  font-weight: 500;
-}
-
-.kpi-icon {
-  font-size: 1.2rem;
 }
 
 .kpi-body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .kpi-value {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
 }
 
@@ -82,29 +76,15 @@ body {
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 6px;
-}
-
-.kpi-change.positive {
   background: #f0fdf4;
   color: #166534;
 }
 
-.kpi-change.negative {
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-/* Main Grid Layout */
+/* Основне розпланування */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-}
-
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 .widget-card {
@@ -112,22 +92,10 @@ body {
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   margin-bottom: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.widget-header h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.widget-description {
-  font-size: 0.85rem;
-  color: #64748b;
-  margin: 8px 0 16px;
-}
-
-/* TrackList Table */
 .filter-header {
   display: flex;
   justify-content: space-between;
@@ -135,14 +103,7 @@ body {
   margin-bottom: 16px;
 }
 
-.select-input {
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  font-size: 0.875rem;
-}
-
+/* Таблиця */
 .track-table {
   width: 100%;
   border-collapse: collapse;
@@ -154,92 +115,70 @@ body {
   padding: 10px;
   border-bottom: 2px solid #e2e8f0;
   color: #64748b;
-  font-weight: 600;
 }
 
 .track-table td {
-  padding: 12px 10px;
+  padding: 10px;
   border-bottom: 1px solid #f1f5f9;
+}
+
+.track-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 
 .track-title {
   font-weight: 600;
-  color: #1e293b;
 }
 
-.genre-badge {
-  background-color: #f1f5f9;
-  color: #475569;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
+/* Кнопки сортування */
+.sort-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
-/* Buttons and Controls */
+.btn-sort {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.btn-sort.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* Інші кнопки */
 .counter-controls {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-bottom: 16px;
+  margin: 12px 0;
 }
 
 .counter-display {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  min-width: 40px;
-  text-align: center;
 }
 
 .btn {
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-
-.btn-step {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-  font-size: 1.2rem;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-step:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-reset {
-  width: 100%;
+  border: 1px solid #cbd5e1;
   background: #f8fafc;
-  border-color: #e2e8f0;
-  color: #64748b;
+  cursor: pointer;
 }
 
 .btn-primary {
   background: #2563eb;
   color: white;
   width: 100%;
-  margin-top: 12px;
-}
-
-.btn-primary:hover {
-  background: #1d4ed8;
-}
-
-.toggle-box {
-  display: flex;
-  flex-direction: column;
-}
-
-.toggle-status {
-  font-size: 0.875rem;
 }
