@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectFavorites, toggleFavorite } from '../store/dashboardSlice';
 
 export default function TrackList({ tracks, loading, error, showInSeconds }) {
     const [sortField, setSortField] = useState('title');
     const [sortDirection, setSortDirection] = useState('asc');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const favorites = useSelector(selectFavorites);
 
     if (loading) {
         return (
@@ -59,7 +63,7 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
     return (
         <div className="widget-card tracklist-widget">
             <div className="filter-header">
-                <h3>Каталог Jamendo (натисніть на трек для деталей)</h3>
+                <h3>Каталог Jamendo (клік — деталі, ❤️ — в обране)</h3>
                 <div className="sort-controls">
                     <span className="sort-label">Сортувати:</span>
                     <button
@@ -81,6 +85,7 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
                 <table className="track-table">
                     <thead>
                     <tr>
+                        <th>Обране</th>
                         <th>Обкладинка</th>
                         <th>Назва</th>
                         <th>Виконавець</th>
@@ -89,33 +94,46 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
                     </tr>
                     </thead>
                     <tbody>
-                    {sortedTracks.map((track) => (
-                        <tr
-                            key={track.id}
-                            className="clickable-row"
-                            onClick={() => navigate(`/track/${track.id}`)}
-                        >
-                            <td>
-                                <img src={track.image} alt={track.title} className="track-cover" />
-                            </td>
-                            <td className="track-title">
-                                <Link
-                                    to={`/track/${track.id}`}
-                                    className="track-link"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    {track.title}
-                                </Link>
-                            </td>
-                            <td>{track.artist}</td>
-                            <td className="album-name">{track.album}</td>
-                            <td>
-                                <strong>
-                                    {showInSeconds ? `${track.durationSec} сек` : track.durationFormatted}
-                                </strong>
-                            </td>
-                        </tr>
-                    ))}
+                    {sortedTracks.map((track) => {
+                        const isFav = favorites.includes(String(track.id));
+                        return (
+                            <tr
+                                key={track.id}
+                                className="clickable-row"
+                                onClick={() => navigate(`/track/${track.id}`)}
+                            >
+                                <td onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        type="button"
+                                        className={`btn-fav ${isFav ? 'active' : ''}`}
+                                        title={isFav ? 'Видалити з обраного' : 'Додати в обране'}
+                                        onClick={() => dispatch(toggleFavorite(track.id))}
+                                    >
+                                        {isFav ? '❤️' : '🤍'}
+                                    </button>
+                                </td>
+                                <td>
+                                    <img src={track.image} alt={track.title} className="track-cover" />
+                                </td>
+                                <td className="track-title">
+                                    <Link
+                                        to={`/track/${track.id}`}
+                                        className="track-link"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {track.title}
+                                    </Link>
+                                </td>
+                                <td>{track.artist}</td>
+                                <td className="album-name">{track.album}</td>
+                                <td>
+                                    <strong>
+                                        {showInSeconds ? `${track.durationSec} сек` : track.durationFormatted}
+                                    </strong>
+                                </td>
+                            </tr>
+                        );
+                    })}
                     </tbody>
                 </table>
             </div>

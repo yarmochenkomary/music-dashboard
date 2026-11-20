@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import KpiCard from '../components/KpiCard';
 import Counter from '../components/Counter';
 import Toggle from '../components/Toggle';
 import TrackList from '../components/TrackList';
 import FilterPanel from '../components/FilterPanel';
+import AnalyticsChart from '../components/AnalyticsChart';
 import { useDebounce } from '../hooks/useDebounce';
 import { useFetch } from '../hooks/useFetch';
-import { useFilters } from '../context/FilterContext';
+import { selectFilters, selectFavorites } from '../store/dashboardSlice';
 import { fetchTracksWithFilters } from '../services/jamendoApi';
 
 export default function DashboardPage() {
-    const { filters } = useFilters();
+    const filters = useSelector(selectFilters);
+    const favorites = useSelector(selectFavorites);
+
     const [showInSeconds, setShowInSeconds] = useState(false);
     const [visibleCount, setVisibleCount] = useState(filters.limit);
 
@@ -37,7 +41,6 @@ export default function DashboardPage() {
     const avgSecs = avgDurationSec % 60;
     const avgDurationFormatted = `${avgMins}:${avgSecs < 10 ? '0' : ''}${avgSecs} хв`;
 
-    const topArtist = totalTracks > 0 ? trackList[0].artist : '—';
     const visibleTracks = trackList.slice(0, Math.min(visibleCount, totalTracks || 15));
 
     return (
@@ -51,11 +54,11 @@ export default function DashboardPage() {
                     icon="📊"
                 />
                 <KpiCard
-                    title="Топ-виконавець вибірки"
-                    value={topArtist}
-                    change="Leader"
+                    title="В обраному (Redux)"
+                    value={`${favorites.length} треків`}
+                    change="Збережено у Store"
                     isPositive={true}
-                    icon="👑"
+                    icon="❤️"
                 />
                 <KpiCard
                     title="Сер. тривалість вибірки"
@@ -67,6 +70,9 @@ export default function DashboardPage() {
             </section>
 
             <FilterPanel />
+
+            {/* Інтерактивний графік, що реагує на фільтри */}
+            <AnalyticsChart tracks={visibleTracks} loading={loading} />
 
             <section className="dashboard-grid">
                 <div className="main-content">

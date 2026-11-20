@@ -1,9 +1,13 @@
 import { useParams, Link } from 'react-router';
+import { useSelector, useDispatch } from 'react-redux';
 import { useFetch } from '../hooks/useFetch';
 import { fetchTrackById } from '../services/jamendoApi';
+import { selectFavorites, toggleFavorite } from '../store/dashboardSlice';
 
 export default function TrackDetailsPage() {
     const { id } = useParams();
+    const dispatch = useDispatch();
+    const favorites = useSelector(selectFavorites);
     const { data: track, loading, error } = useFetch(fetchTrackById, id);
 
     if (loading) {
@@ -25,7 +29,6 @@ export default function TrackDetailsPage() {
         );
     }
 
-
     if (!track) {
         return (
             <div className="widget-card status-card not-found-card">
@@ -36,11 +39,22 @@ export default function TrackDetailsPage() {
         );
     }
 
+    const isFav = favorites.includes(String(track.id));
+
     return (
         <div className="widget-card details-card">
             <div className="details-top-bar">
                 <Link to="/" className="btn btn-back">← Назад до списку треків</Link>
-                <span className="track-badge">ID: {track.id}</span>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <button
+                        type="button"
+                        className={`btn-fav-large ${isFav ? 'active' : ''}`}
+                        onClick={() => dispatch(toggleFavorite(track.id))}
+                    >
+                        {isFav ? '❤️ В обраному' : '🤍 Додати в обране'}
+                    </button>
+                    <span className="track-badge">ID: {track.id}</span>
+                </div>
             </div>
 
             <div className="details-content">

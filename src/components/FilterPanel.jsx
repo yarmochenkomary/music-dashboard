@@ -1,9 +1,16 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { useFilters } from '../context/FilterContext';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    selectFilters,
+    setFilters,
+    resetFilters,
+    INITIAL_FILTERS
+} from '../store/dashboardSlice';
 
 export default function FilterPanel() {
-    const { filters, INITIAL_FILTERS, updateFilters, resetFilters } = useFilters();
+    const dispatch = useDispatch();
+    const filters = useSelector(selectFilters);
 
     const { control, watch, reset } = useForm({
         defaultValues: filters
@@ -11,18 +18,20 @@ export default function FilterPanel() {
 
     useEffect(() => {
         const subscription = watch((values) => {
-            updateFilters({
-                search: values.search || '',
-                genre: values.genre || 'All',
-                limit: Number(values.limit) || 15
-            });
+            dispatch(
+                setFilters({
+                    search: values.search || '',
+                    genre: values.genre || 'All',
+                    limit: Number(values.limit) || 15
+                })
+            );
         });
         return () => subscription.unsubscribe();
-    }, [watch, updateFilters]);
+    }, [watch, dispatch]);
 
     const handleResetClick = () => {
         reset(INITIAL_FILTERS);
-        resetFilters();
+        dispatch(resetFilters());
     };
 
     return (

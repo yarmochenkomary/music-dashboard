@@ -1,11 +1,19 @@
+import { useEffect } from 'react';
 import { Routes, Route, Link } from 'react-router';
-import { useTheme } from './context/ThemeContext';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectTheme, selectFavorites, toggleTheme } from './store/dashboardSlice';
 import DashboardPage from './pages/DashboardPage';
 import TrackDetailsPage from './pages/TrackDetailsPage';
 import './App.css';
 
 export default function App() {
-    const { theme, toggleTheme } = useTheme();
+    const dispatch = useDispatch();
+    const theme = useSelector(selectTheme);
+    const favorites = useSelector(selectFavorites);
+
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', theme);
+    }, [theme]);
 
     return (
         <div className="app-container">
@@ -14,12 +22,15 @@ export default function App() {
                     <Link to="/" className="brand-link">
                         <h1>🎧 Jamendo Analytics Dashboard</h1>
                     </Link>
-                    <p className="subtitle">Лабораторна робота №4 — React Router, Дрілдаун та Context API</p>
+                    <p className="subtitle">Лабораторна робота №5 — Redux Toolkit та візуалізація даних (Recharts)</p>
                 </div>
 
-                <button className="btn-theme-toggle" onClick={toggleTheme}>
-                    {theme === 'light' ? '🌙 Темна тема' : '☀️ Світла тема'}
-                </button>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    <span className="track-badge">❤️ Обране: {favorites.length}</span>
+                    <button className="btn-theme-toggle" onClick={() => dispatch(toggleTheme())}>
+                        {theme === 'light' ? '🌙 Темна тема' : '☀️ Світла тема'}
+                    </button>
+                </div>
             </header>
 
             <Routes>
