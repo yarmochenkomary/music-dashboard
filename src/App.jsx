@@ -1,87 +1,85 @@
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import KpiCard from './components/KpiCard';
 import Counter from './components/Counter';
 import Toggle from './components/Toggle';
 import TrackList from './components/TrackList';
-import { fetchPopularTracks } from './services/jamendoApi';
+import FilterPanel from './components/FilterPanel';
+import { useDebounce } from './hooks/useDebounce';
+import { useFetch } from './hooks/useFetch';
+import { fetchTracksWithFilters } from './services/jamendoApi';
 import './App.css';
 
-export default function App() {
-    const [tracks, setTracks] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const INITIAL_FILTERS = {
+    search: '',
+    genre: 'All',
+    limit: 15
+};
 
+export default function App() {
+    const [filters, setFilters] = useState(INITIAL_FILTERS);
     const [showInSeconds, setShowInSeconds] = useState(false);
     const [visibleCount, setVisibleCount] = useState(15);
 
-    // Вимога 1: Дані завантажуються суто через useEffect при монтуванні
-    useEffect(() => {
-        let isMounted = true;
-        setLoading(true);
+    // 1. Затримуємо пошуковий запит на 400 мс
+    const debouncedSearch = useDebounce(filters.search, 400);
 
-        fetchPopularTracks(15)
-            .then(data => {
-                if (isMounted) {
-                    setTracks(data);
-                    setVisibleCount(data.length);
-                    setError(null);
-                }
-            })
-            .catch(err => {
-                if (isMounted) {
-                    setError(err.message || 'Помилка отримання даних з API');
-                }
-            })
-            .finally(() => {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            });
+    // 2. Формуємо параметри та передаємо в кастомний хук useFetch
+    const queryParams = {
+        search: debouncedSearch,
+        genre: filters.genre,
+        limit: filters.limit
+    };
 
-        return () => {
-            isMounted = false; // Cleanup при розмонтуванні
-        };
-    }, []);
+    const { data: tracks, loading, error } = useFetch(fetchTracksWithFilters, queryParams);
 
-    // Вимога 5: Перерахунок KPI на основі реальних даних з API
-    const totalTracks = tracks.length;
+    const trackList = tracks || [];
 
+    const totalTracks = trackList.length;
     const avgDurationSec = totalTracks > 0
-        ? Math.round(tracks.reduce((acc, t) => acc + t.durationSec, 0) / totalTracks)
+        ? Math.round(trackList.reduce((acc, t) => acc + t.durationSec, 0) / totalTracks)
         : 0;
     const avgMins = Math.floor(avgDurationSec / 60);
     const avgSecs = avgDurationSec % 60;
     const avgDurationFormatted = `${avgMins}:${avgSecs < 10 ? '0' : ''}${avgSecs} хв`;
 
-    const topArtist = totalTracks > 0 ? tracks[0].artist : '—';
+    const topArtist = totalTracks > 0 ? trackList[0].artist : '—';
+    const visibleTracks = trackList.slice(0, Math.min(visibleCount, totalTracks || 15));
 
-    const visibleTracks = tracks.slice(0, visibleCount);
+    const handleFilterChange = useCallback((newFilters) => {
+        setFilters(newFilters);
+        setVisibleCount(newFilters.limit);
+    }, []);
+
+    const handleResetFilters = useCallback(() => {
+        setFilters(INITIAL_FILTERS);
+        setVisibleCount(INITIAL_FILTERS.limit);
+    }, []);
 
     return (
         <div className="app-container">
             <header className="dashboard-header">
                 <h1>🎧 Jamendo Analytics Dashboard</h1>
-                <p className="subtitle">Лабораторна робота №2 — Інтеграція з REST API (useEffect)</p>
+                <p className="subtitle">Лабораторна робота №3 — Контрольовані форми та Custom Hooks</p>
             </header>
 
-            {/* Перераховані KPI з API */}
+            {/* Живі KPI */}
             <section className="kpi-grid">
                 <KpiCard
-                    title="Завантажено з API"
+                    title="Знайдено за фільтром"
                     value={`${totalTracks} треків`}
-                    change="Jamendo v3.0 API"
+                    change={filters.genre === 'All' ? 'Усі жанри' : `Жанр: ${filters.genre}`}
                     isPositive={true}
-                    icon="🌐"
+                    icon="📊"
                 />
                 <KpiCard
-                    title="Топ-виконавець (#1)"
+                    title="Топ-виконавець вибірки"
                     value={topArtist}
-                    change="Popularity Leader"
+                    change="Leader"
                     isPositive={true}
                     icon="👑"
                 />
                 <KpiCard
-                    title="Середня тривалість"
+                    title="Сер. тривалість вибірки"
                     value={loading ? '...' : avgDurationFormatted}
                     change={`${avgDurationSec} сек`}
                     isPositive={true}
@@ -89,7 +87,14 @@ export default function App() {
                 />
             </section>
 
-            {/* Основний блок */}
+            {/* Контрольована панель фільтрів */}
+            <FilterPanel
+                defaultValues={INITIAL_FILTERS}
+                onFilterChange={handleFilterChange}
+                onReset={handleResetFilters}
+            />
+
+            {/* Таблиця та бічна панель */}
             <section className="dashboard-grid">
                 <div className="main-content">
                     <TrackList
@@ -101,12 +106,12 @@ export default function App() {
                 </div>
                 <aside className="sidebar-content">
                     <Counter
-                        count={visibleCount}
-                        onIncrement={() => setVisibleCount(prev => Math.min(prev + 1, tracks.length || 15))}
+                        count={visibleTracks.length}
+                        onIncrement={() => setVisibleCount(prev => Math.min(prev + 1, totalTracks))}
                         onDecrement={() => setVisibleCount(prev => Math.max(prev - 1, 1))}
-                        onReset={() => setVisibleCount(tracks.length || 15)}
+                        onReset={() => setVisibleCount(totalTracks)}
                         min={1}
-                        max={tracks.length || 15}
+                        max={totalTracks || 15}
                     />
                     <Toggle isSeconds={showInSeconds} onToggle={() => setShowInSeconds(prev => !prev)} />
                 </aside>
