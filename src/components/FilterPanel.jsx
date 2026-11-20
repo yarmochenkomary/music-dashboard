@@ -1,33 +1,34 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
+import { useFilters } from '../context/FilterContext';
 
-export default function FilterPanel({ defaultValues, onFilterChange, onReset }) {
+export default function FilterPanel() {
+    const { filters, INITIAL_FILTERS, updateFilters, resetFilters } = useFilters();
+
     const { control, watch, reset } = useForm({
-        defaultValues
+        defaultValues: filters
     });
 
     useEffect(() => {
         const subscription = watch((values) => {
-            onFilterChange({
+            updateFilters({
                 search: values.search || '',
                 genre: values.genre || 'All',
                 limit: Number(values.limit) || 15
             });
         });
         return () => subscription.unsubscribe();
-    }, [watch, onFilterChange]);
+    }, [watch, updateFilters]);
 
     const handleResetClick = () => {
-        reset(defaultValues);
-        onReset();
+        reset(INITIAL_FILTERS);
+        resetFilters();
     };
 
     return (
         <div className="widget-card filter-panel">
             <h3>🔍 Панель пошуку та фільтрів</h3>
             <form className="filter-form" onSubmit={(e) => e.preventDefault()}>
-
-                {/* Поле 1: Текстовий пошук */}
                 <div className="form-group">
                     <label htmlFor="search-input">Пошук за назвою або артистом:</label>
                     <Controller
@@ -45,7 +46,6 @@ export default function FilterPanel({ defaultValues, onFilterChange, onReset }) 
                     />
                 </div>
 
-                {/* Поле 2: Фільтр за жанром */}
                 <div className="form-group">
                     <label htmlFor="genre-select">Жанр:</label>
                     <Controller
@@ -65,7 +65,6 @@ export default function FilterPanel({ defaultValues, onFilterChange, onReset }) 
                     />
                 </div>
 
-                {/* Поле 3: Ліміт записів */}
                 <div className="form-group">
                     <label htmlFor="limit-select">Ліміт вибірки:</label>
                     <Controller
@@ -86,13 +85,11 @@ export default function FilterPanel({ defaultValues, onFilterChange, onReset }) 
                     />
                 </div>
 
-                {/* Кнопка скидання */}
                 <div className="form-group btn-group">
                     <button type="button" className="btn btn-reset" onClick={handleResetClick}>
                         ↺ Скинути фільтри
                     </button>
                 </div>
-
             </form>
         </div>
     );

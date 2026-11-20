@@ -1,20 +1,20 @@
 import { useState } from 'react';
+import { useNavigate, Link } from 'react-router';
 
 export default function TrackList({ tracks, loading, error, showInSeconds }) {
-    const [sortField, setSortField] = useState('title'); // 'title' або 'durationSec'
-    const [sortDirection, setSortDirection] = useState('asc'); // 'asc' або 'desc'
+    const [sortField, setSortField] = useState('title');
+    const [sortDirection, setSortDirection] = useState('asc');
+    const navigate = useNavigate();
 
-    // 1. СТАН LOADING (Поки вантажиться з мережі)
     if (loading) {
         return (
             <div className="widget-card status-card">
                 <div className="spinner"></div>
-                <p>Завантаження реальних даних з Jamendo API...</p>
+                <p>Завантаження даних з Jamendo API...</p>
             </div>
         );
     }
 
-    // 2. СТАН ERROR (Якщо запит не вдався)
     if (error) {
         return (
             <div className="widget-card status-card error-card">
@@ -25,16 +25,14 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
         );
     }
 
-    // 3. СТАН EMPTY (Якщо даних немає)
     if (!tracks || tracks.length === 0) {
         return (
             <div className="widget-card status-card">
-                <p>📭 Список треків порожній.</p>
+                <p>📭 За вашим запитом треків не знайдено.</p>
             </div>
         );
     }
 
-    // 4. DERIVED STATE: Сортування без мутації вихідного масиву
     const sortedTracks = [...tracks].sort((a, b) => {
         let aVal = a[sortField];
         let bVal = b[sortField];
@@ -51,7 +49,7 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
 
     const handleSort = (field) => {
         if (sortField === field) {
-            setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
         } else {
             setSortField(field);
             setSortDirection('asc');
@@ -61,7 +59,7 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
     return (
         <div className="widget-card tracklist-widget">
             <div className="filter-header">
-                <h3>Каталог Jamendo (Live REST API)</h3>
+                <h3>Каталог Jamendo (натисніть на трек для деталей)</h3>
                 <div className="sort-controls">
                     <span className="sort-label">Сортувати:</span>
                     <button
@@ -79,7 +77,6 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
                 </div>
             </div>
 
-            {/* 5 полів у таблиці: Обкладинка, Назва, Виконавець, Альбом, Тривалість */}
             <div className="track-table-wrapper">
                 <table className="track-table">
                     <thead>
@@ -92,12 +89,24 @@ export default function TrackList({ tracks, loading, error, showInSeconds }) {
                     </tr>
                     </thead>
                     <tbody>
-                    {sortedTracks.map(track => (
-                        <tr key={track.id}>
+                    {sortedTracks.map((track) => (
+                        <tr
+                            key={track.id}
+                            className="clickable-row"
+                            onClick={() => navigate(`/track/${track.id}`)}
+                        >
                             <td>
                                 <img src={track.image} alt={track.title} className="track-cover" />
                             </td>
-                            <td className="track-title">{track.title}</td>
+                            <td className="track-title">
+                                <Link
+                                    to={`/track/${track.id}`}
+                                    className="track-link"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {track.title}
+                                </Link>
+                            </td>
                             <td>{track.artist}</td>
                             <td className="album-name">{track.album}</td>
                             <td>
