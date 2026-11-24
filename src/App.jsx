@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
-import { Routes, Route, Link } from 'react-router';
+import { Routes, Route, Link, useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectTheme, selectFavorites, toggleTheme } from './store/dashboardSlice';
+import { Button, Badge, Card } from './design-system';
 import DashboardPage from './pages/DashboardPage';
 import TrackDetailsPage from './pages/TrackDetailsPage';
 import './App.css';
 
 export default function App() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const theme = useSelector(selectTheme);
     const favorites = useSelector(selectFavorites);
 
@@ -22,14 +24,14 @@ export default function App() {
                     <Link to="/" className="brand-link">
                         <h1>🎧 Jamendo Analytics Dashboard</h1>
                     </Link>
-                    <p className="subtitle">Лабораторна робота №5 — Redux Toolkit та візуалізація даних (Recharts)</p>
+                    <p className="subtitle">Лабораторна робота №6 — Дизайн-система, Atomic Design та Storybook</p>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <span className="track-badge">❤️ Обране: {favorites.length}</span>
-                    <button className="btn-theme-toggle" onClick={() => dispatch(toggleTheme())}>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+                    <Badge variant="primary">❤️ Обране: {favorites.length}</Badge>
+                    <Button variant="secondary" onClick={() => dispatch(toggleTheme())}>
                         {theme === 'light' ? '🌙 Темна тема' : '☀️ Світла тема'}
-                    </button>
+                    </Button>
                 </div>
             </header>
 
@@ -39,10 +41,10 @@ export default function App() {
                 <Route
                     path="*"
                     element={
-                        <div className="widget-card status-card">
+                        <Card>
                             <h2>Сторінку не знайдено</h2>
-                            <Link to="/" className="btn btn-back">← На головну</Link>
-                        </div>
+                            <Button onClick={() => navigate('/')}>← На головну</Button>
+                        </Card>
                     }
                 />
             </Routes>

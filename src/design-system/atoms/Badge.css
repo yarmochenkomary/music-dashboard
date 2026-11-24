@@ -1,0 +1,24 @@
+
+.ds-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    border-radius: var(--radius-full);
+}
+
+.ds-badge--primary {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary-soft-text);
+}
+
+.ds-badge--success {
+    background-color: var(--color-success-soft);
+    color: var(--color-success-text);
+}
+
+.ds-badge--neutral {
+    background-color: var(--color-secondary);
+    color: var(--color-text-muted);
+}

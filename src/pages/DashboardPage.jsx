@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import KpiCard from '../components/KpiCard';
-import Counter from '../components/Counter';
-import Toggle from '../components/Toggle';
 import TrackList from '../components/TrackList';
 import FilterPanel from '../components/FilterPanel';
 import AnalyticsChart from '../components/AnalyticsChart';
+import { StatCard, Card, Button } from '../design-system';
 import { useDebounce } from '../hooks/useDebounce';
 import { useFetch } from '../hooks/useFetch';
 import { selectFilters, selectFavorites } from '../store/dashboardSlice';
@@ -23,55 +21,49 @@ export default function DashboardPage() {
     }, [filters.limit]);
 
     const debouncedSearch = useDebounce(filters.search, 400);
-
-    const queryParams = {
+    const { data: tracks, loading, error } = useFetch(fetchTracksWithFilters, {
         search: debouncedSearch,
         genre: filters.genre,
         limit: filters.limit
-    };
+    });
 
-    const { data: tracks, loading, error } = useFetch(fetchTracksWithFilters, queryParams);
     const trackList = tracks || [];
-
     const totalTracks = trackList.length;
-    const avgDurationSec = totalTracks > 0
-        ? Math.round(trackList.reduce((acc, t) => acc + t.durationSec, 0) / totalTracks)
-        : 0;
-    const avgMins = Math.floor(avgDurationSec / 60);
-    const avgSecs = avgDurationSec % 60;
-    const avgDurationFormatted = `${avgMins}:${avgSecs < 10 ? '0' : ''}${avgSecs} хв`;
+    const avgDurationSec =
+        totalTracks > 0
+            ? Math.round(trackList.reduce((acc, t) => acc + t.durationSec, 0) / totalTracks)
+            : 0;
+    const avgDurationFormatted = `${Math.floor(avgDurationSec / 60)}:${String(avgDurationSec % 60).padStart(2, '0')} хв`;
 
     const visibleTracks = trackList.slice(0, Math.min(visibleCount, totalTracks || 15));
 
     return (
         <>
             <section className="kpi-grid">
-                <KpiCard
+                <StatCard
                     title="Знайдено за фільтром"
                     value={`${totalTracks} треків`}
-                    change={filters.genre === 'All' ? 'Усі жанри' : `Жанр: ${filters.genre}`}
-                    isPositive={true}
+                    badgeText={filters.genre === 'All' ? 'Усі жанри' : filters.genre}
+                    badgeVariant="primary"
                     icon="📊"
                 />
-                <KpiCard
+                <StatCard
                     title="В обраному (Redux)"
                     value={`${favorites.length} треків`}
-                    change="Збережено у Store"
-                    isPositive={true}
+                    badgeText="Store"
+                    badgeVariant="success"
                     icon="❤️"
                 />
-                <KpiCard
+                <StatCard
                     title="Сер. тривалість вибірки"
                     value={loading ? '...' : avgDurationFormatted}
-                    change={`${avgDurationSec} сек`}
-                    isPositive={true}
+                    badgeText={`${avgDurationSec} сек`}
+                    badgeVariant="neutral"
                     icon="⏱️"
                 />
             </section>
 
             <FilterPanel />
-
-            {/* Інтерактивний графік, що реагує на фільтри */}
             <AnalyticsChart tracks={visibleTracks} loading={loading} />
 
             <section className="dashboard-grid">
@@ -84,15 +76,35 @@ export default function DashboardPage() {
                     />
                 </div>
                 <aside className="sidebar-content">
-                    <Counter
-                        count={visibleTracks.length}
-                        onIncrement={() => setVisibleCount((prev) => Math.min(prev + 1, totalTracks))}
-                        onDecrement={() => setVisibleCount((prev) => Math.max(prev - 1, 1))}
-                        onReset={() => setVisibleCount(totalTracks)}
-                        min={1}
-                        max={totalTracks || 15}
-                    />
-                    <Toggle isSeconds={showInSeconds} onToggle={() => setShowInSeconds((prev) => !prev)} />
+                    <Card padding="md">
+                        <h4 style={{ marginBottom: 'var(--space-sm)' }}>Кількість у списку: {visibleTracks.length}</h4>
+                        <div style={{ display: 'flex', gap: 'var(--space-sm)' }}>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setVisibleCount((prev) => Math.max(prev - 1, 1))}
+                            >
+                                −
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setVisibleCount((prev) => Math.min(prev + 1, totalTracks))}
+                            >
+                                +
+                            </Button>
+                            <Button variant="ghost" size="sm" onClick={() => setVisibleCount(totalTracks)}>
+                                Усі ({totalTracks})
+                            </Button>
+                        </div>
+                    </Card>
+
+                    <Card padding="md">
+                        <h4 style={{ marginBottom: 'var(--space-sm)' }}>Одиниці тривалості</h4>
+                        <Button variant="primary" onClick={() => setShowInSeconds((prev) => !prev)}>
+                            {showInSeconds ? 'Переключити на хв:сек' : 'Переключити на секунди'}
+                        </Button>
+                    </Card>
                 </aside>
             </section>
         </>

@@ -1,20 +1,14 @@
 import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { useSelector, useDispatch } from 'react-redux';
-import {
-    selectFilters,
-    setFilters,
-    resetFilters,
-    INITIAL_FILTERS
-} from '../store/dashboardSlice';
+import { selectFilters, setFilters, resetFilters, INITIAL_FILTERS } from '../store/dashboardSlice';
+import { Card, FormField, Input, Select, Button } from '../design-system';
 
 export default function FilterPanel() {
     const dispatch = useDispatch();
     const filters = useSelector(selectFilters);
 
-    const { control, watch, reset } = useForm({
-        defaultValues: filters
-    });
+    const { control, watch, reset } = useForm({ defaultValues: filters });
 
     useEffect(() => {
         const subscription = watch((values) => {
@@ -35,71 +29,64 @@ export default function FilterPanel() {
     };
 
     return (
-        <div className="widget-card filter-panel">
-            <h3>🔍 Панель пошуку та фільтрів</h3>
+        <Card padding="md" className="mb-lg">
+            <h3 style={{ marginBottom: 'var(--space-md)' }}>🔍 Панель пошуку та фільтрів</h3>
             <form className="filter-form" onSubmit={(e) => e.preventDefault()}>
-                <div className="form-group">
-                    <label htmlFor="search-input">Пошук за назвою або артистом:</label>
+                <FormField label="Пошук за назвою або артистом:" htmlFor="search-input">
                     <Controller
                         name="search"
                         control={control}
                         render={({ field }) => (
-                            <input
-                                {...field}
-                                id="search-input"
-                                type="text"
-                                className="input-control"
-                                placeholder="Наприклад: Get Down, Silence..."
-                            />
+                            <Input {...field} id="search-input" placeholder="Наприклад: Get Down, Silence..." />
                         )}
                     />
-                </div>
+                </FormField>
 
-                <div className="form-group">
-                    <label htmlFor="genre-select">Жанр:</label>
+                <FormField label="Жанр:" htmlFor="genre-select">
                     <Controller
                         name="genre"
                         control={control}
                         render={({ field }) => (
-                            <select {...field} id="genre-select" className="input-control">
-                                <option value="All">Усі жанри</option>
-                                <option value="Rock">Rock</option>
-                                <option value="Pop">Pop</option>
-                                <option value="Electronic">Electronic</option>
-                                <option value="Classical">Classical</option>
-                                <option value="Metal">Metal</option>
-                                <option value="Ambient">Ambient</option>
-                            </select>
+                            <Select
+                                {...field}
+                                id="genre-select"
+                                options={[
+                                    { value: 'All', label: 'Усі жанри' },
+                                    { value: 'Rock', label: 'Rock' },
+                                    { value: 'Pop', label: 'Pop' },
+                                    { value: 'Electronic', label: 'Electronic' },
+                                    { value: 'Classical', label: 'Classical' },
+                                    { value: 'Metal', label: 'Metal' },
+                                    { value: 'Ambient', label: 'Ambient' }
+                                ]}
+                            />
                         )}
                     />
-                </div>
+                </FormField>
 
-                <div className="form-group">
-                    <label htmlFor="limit-select">Ліміт вибірки:</label>
+                <FormField label="Ліміт вибірки:" htmlFor="limit-select">
                     <Controller
                         name="limit"
                         control={control}
                         render={({ field }) => (
-                            <select
+                            <Select
                                 {...field}
                                 id="limit-select"
-                                className="input-control"
                                 onChange={(e) => field.onChange(Number(e.target.value))}
-                            >
-                                <option value={5}>До 5 треків</option>
-                                <option value={10}>До 10 треків</option>
-                                <option value={15}>До 15 треків</option>
-                            </select>
+                                options={[
+                                    { value: 5, label: 'До 5 треків' },
+                                    { value: 10, label: 'До 10 треків' },
+                                    { value: 15, label: 'До 15 треків' }
+                                ]}
+                            />
                         )}
                     />
-                </div>
+                </FormField>
 
-                <div className="form-group btn-group">
-                    <button type="button" className="btn btn-reset" onClick={handleResetClick}>
-                        ↺ Скинути фільтри
-                    </button>
-                </div>
+                <Button variant="secondary" onClick={handleResetClick}>
+                    ↺ Скинути фільтри
+                </Button>
             </form>
-        </div>
+        </Card>
     );
 }

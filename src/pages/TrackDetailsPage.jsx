@@ -1,69 +1,64 @@
-import { useParams, Link } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { useFetch } from '../hooks/useFetch';
 import { fetchTrackById } from '../services/jamendoApi';
 import { selectFavorites, toggleFavorite } from '../store/dashboardSlice';
+import { Card, Button, Badge, Spinner } from '../design-system';
 
 export default function TrackDetailsPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const favorites = useSelector(selectFavorites);
     const { data: track, loading, error } = useFetch(fetchTrackById, id);
 
     if (loading) {
         return (
-            <div className="widget-card status-card">
-                <div className="spinner"></div>
-                <p>Завантаження інформації про трек #{id}...</p>
-            </div>
+            <Card>
+                <Spinner text={`Завантаження треку #${id}...`} />
+            </Card>
         );
     }
 
-    if (error) {
+    if (error || !track) {
         return (
-            <div className="widget-card status-card error-card">
-                <h3>⚠️ Помилка</h3>
-                <p>{error}</p>
-                <Link to="/" className="btn btn-back">← Назад до дашборду</Link>
-            </div>
-        );
-    }
-
-    if (!track) {
-        return (
-            <div className="widget-card status-card not-found-card">
-                <h2>404 — Трек не знайдено</h2>
-                <p>Запис з ідентифікатором <strong>#{id}</strong> відсутній у каталозі Jamendo.</p>
-                <Link to="/" className="btn btn-back">← Повернутися на головну</Link>
-            </div>
+            <Card>
+                <h2>{error ? 'Помилка завантаження' : '404 — Трек не знайдено'}</h2>
+                <p style={{ margin: 'var(--space-md) 0' }}>
+                    {error || `Запис з ID #${id} відсутній у каталозі.`}
+                </p>
+                <Button onClick={() => navigate('/')}>← Назад до дашборду</Button>
+            </Card>
         );
     }
 
     const isFav = favorites.includes(String(track.id));
 
     return (
-        <div className="widget-card details-card">
+        <Card padding="lg">
             <div className="details-top-bar">
-                <Link to="/" className="btn btn-back">← Назад до списку треків</Link>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <button
-                        type="button"
-                        className={`btn-fav-large ${isFav ? 'active' : ''}`}
+                <Button variant="primary" onClick={() => navigate('/')}>
+                    ← Назад до списку
+                </Button>
+                <div style={{ display: 'flex', gap: 'var(--space-sm)', alignItems: 'center' }}>
+                    <Button
+                        variant={isFav ? 'danger' : 'secondary'}
                         onClick={() => dispatch(toggleFavorite(track.id))}
                     >
                         {isFav ? '❤️ В обраному' : '🤍 Додати в обране'}
-                    </button>
-                    <span className="track-badge">ID: {track.id}</span>
+                    </Button>
+                    <Badge variant="neutral">ID: {track.id}</Badge>
                 </div>
             </div>
 
             <div className="details-content">
                 <img src={track.image} alt={track.title} className="details-cover" />
-
                 <div className="details-info">
-                    <span className="genre-pill">{track.genre}</span>
-                    <h2>{track.title}</h2>
-                    <p className="details-artist">Виконавець: <strong>{track.artist}</strong></p>
+                    <Badge variant="primary">{track.genre}</Badge>
+                    <h2 style={{ marginTop: 'var(--space-sm)' }}>{track.title}</h2>
+                    <p className="details-artist">
+                        Виконавець: <strong>{track.artist}</strong>
+                    </p>
 
                     <div className="details-meta-grid">
                         <div className="meta-item">
@@ -72,7 +67,9 @@ export default function TrackDetailsPage() {
                         </div>
                         <div className="meta-item">
                             <span className="meta-label">Тривалість</span>
-                            <span className="meta-value">{track.durationFormatted} ({track.durationSec} сек)</span>
+                            <span className="meta-value">
+                {track.durationFormatted} ({track.durationSec} сек)
+              </span>
                         </div>
                         <div className="meta-item">
                             <span className="meta-label">Дата релізу</span>
@@ -91,15 +88,8 @@ export default function TrackDetailsPage() {
                             <span className="meta-value">{track.license}</span>
                         </div>
                     </div>
-
-                    {track.audioUrl && (
-                        <div className="audio-preview">
-                            <p>Попереднє прослуховування:</p>
-                            <audio controls src={track.audioUrl} style={{ width: '100%', marginTop: '8px' }} />
-                        </div>
-                    )}
                 </div>
             </div>
-        </div>
+        </Card>
     );
 }
